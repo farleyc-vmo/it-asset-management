@@ -139,6 +139,7 @@ export interface AssetAssignment {
   priority: Priority;
   title: string;
   approved_by: string | null;
+  warehouse_id?: string;
 }
 
 export interface AuditLog {

@@ -162,6 +162,18 @@ export default function AssignmentsPage() {
     return { asset, warehouse };
   };
 
+  const [selectedStockId, setSelectedStockId] = useState(
+    editing?.stock_id || "",
+  );
+  const [selectedType, setSelectedType] = useState(
+    editing?.assignment_type || "CREATE_ASSIGNMENT",
+  );
+
+  const selectedStock = assetStocks.find(
+    (stock) => stock.id === selectedStockId,
+  );
+  const selectedWarehouse = selectedType !== "CHANGE_WAREHOUSE";
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -335,11 +347,12 @@ export default function AssignmentsPage() {
                   name="stock_id"
                   defaultValue={editing?.stock_id}
                   required
+                  onValueChange={setSelectedStockId}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Select asset" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className={"w-full"}>
                     {assetStocks.map((stock) => {
                       const asset = assets.find((a) => a.id === stock.asset_id);
                       const warehouse = warehouses.find(
@@ -356,31 +369,56 @@ export default function AssignmentsPage() {
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="assigned_to">Assign To</Label>
-                <Select
-                  name="assigned_to"
-                  defaultValue={editing?.assigned_to}
-                  required
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select employee" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {employees
-                      .filter((e) => e.status === "active")
-                      .map((emp) => (
-                        <SelectItem key={emp.id} value={emp.id}>
-                          {emp.full_name}
-                        </SelectItem>
-                      ))}
-                  </SelectContent>
-                </Select>
+                {selectedWarehouse ? (
+                  <>
+                    <Label htmlFor="assigned_to">Assign To</Label>
+                    <Select
+                      name="assigned_to"
+                      defaultValue={editing?.assigned_to}
+                      required
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select employee" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {employees
+                          .filter((e) => e.status === "active")
+                          .map((emp) => (
+                            <SelectItem key={emp.id} value={emp.id}>
+                              {emp.full_name}
+                            </SelectItem>
+                          ))}
+                      </SelectContent>
+                    </Select>
+                  </>
+                ) : (
+                  <>
+                    <Label htmlFor="warehouse_id">Warehouse</Label>
+                    <Select
+                      name="warehouse_id"
+                      defaultValue={editing?.warehouse_id}
+                      required
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select warehouses" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {warehouses.map((emp) => (
+                          <SelectItem key={emp.id} value={emp.id}>
+                            {emp.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </>
+                )}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="assignment_type">Assignment Type</Label>
                 <Select
                   name="assignment_type"
                   defaultValue={editing?.assignment_type || "CREATE_ASSIGNMENT"}
+                  onValueChange={setSelectedType}
                 >
                   <SelectTrigger>
                     <SelectValue />
@@ -396,23 +434,7 @@ export default function AssignmentsPage() {
                   </SelectContent>
                 </Select>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="status">Status</Label>
-                <Select
-                  name="status"
-                  defaultValue={editing?.status || "pending"}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="pending">Pending</SelectItem>
-                    <SelectItem value="assigned">Assigned</SelectItem>
-                    <SelectItem value="returned">Returned</SelectItem>
-                    <SelectItem value="cancelled">Cancelled</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+
               <div className="space-y-2">
                 <Label htmlFor="priority">Priority</Label>
                 <Select
@@ -513,15 +535,38 @@ export default function AssignmentsPage() {
                 </Select>
               </div>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="serials">Serial Numbers (comma separated)</Label>
-              <Input
-                id="serials"
-                name="serials"
-                defaultValue={editing?.serials.join(", ")}
-                placeholder="SN001, SN002"
-              />
-            </div>
+
+            {selectedStock && (
+              <div className="space-y-2">
+                <Label>Serial Numbers</Label>
+
+                {selectedStock.serials.map((serial) => (
+                  <div
+                    key={serial.name}
+                    className="flex items-center justify-between"
+                  >
+                    <span>{serial.name}</span>
+
+                    <Select
+                      defaultValue={serial.status || "AVAILABLE"}
+                      name={`serial-${serial.name}`}
+                    >
+                      <SelectTrigger className="w-40">
+                        <SelectValue />
+                      </SelectTrigger>
+
+                      <SelectContent>
+                        <SelectItem value="AVAILABLE">Available</SelectItem>
+
+                        <SelectItem value="IN_USE">In Use</SelectItem>
+
+                        <SelectItem value="DAMAGED">Damaged</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                ))}
+              </div>
+            )}
             <div className="space-y-2">
               <Label htmlFor="note">Note</Label>
               <Textarea

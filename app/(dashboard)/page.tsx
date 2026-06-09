@@ -23,14 +23,14 @@ export default function DashboardPage() {
     warehouses,
     assetAssignments,
     categories,
+    assetStocks,
   } = useData();
 
-  const activeAssets = assets.filter(
-    (a) => a.status === "active" || a.status === "deployed",
-  ).length;
-  const maintenanceAssets = assets.filter(
-    (a) => a.status === "maintenance",
-  ).length;
+  const activeAssets = assets.filter((a) => a.status === "active").length;
+
+  const maintenanceAssets = assetStocks
+    .flatMap((stock) => stock.serials)
+    .filter((serial) => serial.status === "IN_USE").length;
   const activeEmployees = employees.filter((e) => e.status === "active").length;
   const pendingAssignments = assetAssignments.filter(
     (a) => a.status === "pending",
@@ -218,11 +218,11 @@ export default function DashboardPage() {
       {/* Asset Status Breakdown */}
       <Card>
         <CardHeader>
-          <CardTitle>Asset Status Breakdown</CardTitle>
+          <CardTitle>Asset Stock Status Breakdown</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-            {["active", "deployed", "in_stock", "maintenance", "lost"].map(
+            {["AVAILABLE", "DAMAGED", "IN_USE", "MAINTENANCE", "LOST"].map(
               (status) => {
                 const count = assets.filter((a) => a.status === status).length;
                 const percentage =
@@ -230,11 +230,11 @@ export default function DashboardPage() {
                     ? ((count / assets.length) * 100).toFixed(1)
                     : 0;
                 const colors: Record<string, string> = {
-                  active: "bg-green-500",
-                  deployed: "bg-blue-500",
-                  in_stock: "bg-cyan-500",
-                  maintenance: "bg-amber-500",
-                  lost: "bg-gray-500",
+                  AVAILABLE: "bg-green-500",
+                  IN_USE: "bg-blue-500",
+                  MAINTENANCE: "bg-cyan-500",
+                  DAMAGED: "bg-amber-500",
+                  LOST: "bg-gray-500",
                 };
                 return (
                   <div key={status} className="space-y-2">

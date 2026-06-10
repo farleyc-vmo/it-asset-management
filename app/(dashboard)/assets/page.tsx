@@ -1,12 +1,23 @@
 "use client";
 
-import { useState } from "react";
-import { useData } from "@/lib/data-context";
-import type { Asset } from "@/lib/types";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Table,
   TableBody,
@@ -15,22 +26,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, Search, Pencil, Trash2, Package } from "lucide-react";
+import { useData } from "@/lib/data-context";
+import type { Asset } from "@/lib/types";
+import { Package, Pencil, Plus, Search, Trash2 } from "lucide-react";
+import { useState } from "react";
 
 export default function AssetsPage() {
   const { assets, setAssets, categories, employees } = useData();
@@ -55,14 +55,6 @@ export default function AssetsPage() {
     switch (status) {
       case "active":
         return "bg-green-500/10 text-green-500";
-      case "deployed":
-        return "bg-blue-500/10 text-blue-500";
-      case "in_stock":
-        return "bg-cyan-500/10 text-cyan-500";
-      case "maintenance":
-        return "bg-amber-500/10 text-amber-500";
-      case "lost":
-        return "bg-gray-500/10 text-gray-500";
       default:
         return "bg-muted text-muted-foreground";
     }
@@ -82,8 +74,6 @@ export default function AssetsPage() {
       brand: formData.get("brand") as string,
       model: formData.get("model") as string,
       specification: formData.get("specification") as string,
-      purchase_date: formData.get("purchase_date") as string,
-      purchase_cost: Number(formData.get("purchase_cost")) || 0,
       supplier_url: formData.get("supplier_url") as string,
       status: formData.get("status") as Asset["status"],
       image_url: null,
@@ -195,7 +185,7 @@ export default function AssetsPage() {
                   <TableHead>Brand / Model</TableHead>
                   <TableHead>Category</TableHead>
                   <TableHead>Status</TableHead>
-                  <TableHead>Purchase Cost</TableHead>
+                  {/* <TableHead>Purchase Cost</TableHead> */}
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -226,12 +216,7 @@ export default function AssetsPage() {
                           {asset.status.replace("_", " ")}
                         </Badge>
                       </TableCell>
-                      <TableCell>
-                        {new Intl.NumberFormat("vi-VN", {
-                          style: "currency",
-                          currency: "VND",
-                        }).format(asset.purchase_cost)}
-                      </TableCell>
+
                       <TableCell className="text-right">
                         <Button
                           variant="ghost"
@@ -347,7 +332,7 @@ export default function AssetsPage() {
                   required
                 />
               </div>
-              <div className="space-y-2">
+              {/* <div className="space-y-2">
                 <Label htmlFor="purchase_date">Purchase Date</Label>
                 <Input
                   id="purchase_date"
@@ -366,7 +351,7 @@ export default function AssetsPage() {
                   defaultValue={editing?.purchase_cost}
                   required
                 />
-              </div>
+              </div> */}
               <div className="space-y-2 sm:col-span-2">
                 <Label htmlFor="specification">Specification</Label>
                 <Input

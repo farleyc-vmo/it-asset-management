@@ -4,7 +4,8 @@ export type AssignmentStatus =
   | "pending"
   | "assigned"
   | "returned"
-  | "cancelled";
+  | "cancelled"
+  | "maintenance";
 export type AssignmentType =
   | "CREATE_ASSIGNMENT"
   | "REQUEST_ASSET"
@@ -94,8 +95,6 @@ export interface Asset {
   brand: string;
   model: string;
   specification: string;
-  purchase_date: string;
-  purchase_cost: number;
   supplier_url: string;
   status: AssetStatus;
   image_url: string | null;
@@ -114,6 +113,8 @@ export interface AssetStock {
   available_quantity: number;
   reserved_quantity: number;
   serials: any;
+  purchase_date: string;
+  purchase_cost: number;
   created_at: string;
   updated_at: string;
 }

@@ -28,7 +28,15 @@ import {
 } from "@/components/ui/table";
 import { useData } from "@/lib/data-context";
 import type { AssetStock } from "@/lib/types";
-import { Box, ChevronRight, Pencil, Plus, Search, Trash2 } from "lucide-react";
+import {
+  Box,
+  ChevronDown,
+  ChevronRight,
+  Pencil,
+  Plus,
+  Search,
+  Trash2,
+} from "lucide-react";
 import { useState } from "react";
 
 export default function StockPage() {
@@ -70,6 +78,8 @@ export default function StockPage() {
       available_quantity: quantity - reserved,
       reserved_quantity: reserved,
       serials,
+      purchase_date: formData.get("purchase_date") as string,
+      purchase_cost: Number(formData.get("purchase_cost")) || 0,
       created_at: editing?.created_at || now,
       updated_at: now,
     };
@@ -109,6 +119,16 @@ export default function StockPage() {
   //     return { label: "Low Stock", color: "bg-amber-500/10 text-amber-500" };
   //   return { label: "In Stock", color: "bg-green-500/10 text-green-500" };
   // };
+
+  const [expandedRows, setExpandedRows] = useState<string[]>([]);
+
+  const toggleRow = (stockId: string) => {
+    setExpandedRows((prev) =>
+      prev.includes(stockId)
+        ? prev.filter((id) => id !== stockId)
+        : [...prev, stockId],
+    );
+  };
 
   return (
     <div className="space-y-6">
@@ -168,13 +188,13 @@ export default function StockPage() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Asset</TableHead>
+                  <TableHead className="pl-11">Asset</TableHead>
                   <TableHead>Warehouse</TableHead>
                   <TableHead className="text-center">Total</TableHead>
                   <TableHead className="text-center">Available</TableHead>
                   <TableHead className="text-center">Reserved</TableHead>
-                  <TableHead>Serials</TableHead>
-                  <TableHead>Status</TableHead>
+                  <TableHead>Purchase Date</TableHead>
+                  <TableHead>Purchase Cost</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -184,17 +204,33 @@ export default function StockPage() {
                   const warehouse = warehouses.find(
                     (w) => w.id === stock.warehouse_id,
                   );
+                  const isExpanded = expandedRows.includes(stock.id);
                   return (
                     <>
                       <TableRow key={stock.id}>
                         <TableCell>
-                          <div>
-                            <p className="font-medium">
-                              {asset?.asset_name || "-"}
-                            </p>
-                            <p className="text-xs text-muted-foreground font-mono">
-                              {asset?.asset_code}
-                            </p>
+                          <div className="flex items-center gap-2">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-7 w-7 shrink-0"
+                              onClick={() => toggleRow(stock.id)}
+                            >
+                              {isExpanded ? (
+                                <ChevronDown className="h-4 w-4" />
+                              ) : (
+                                <ChevronRight className="h-4 w-4" />
+                              )}
+                            </Button>
+
+                            <div>
+                              <p className="font-medium">
+                                {asset?.asset_name || "-"}
+                              </p>
+                              <p className="font-mono text-xs text-muted-foreground">
+                                {asset?.asset_code}
+                              </p>
+                            </div>
                           </div>
                         </TableCell>
                         <TableCell>{warehouse?.name || "-"}</TableCell>
@@ -208,9 +244,15 @@ export default function StockPage() {
                           {stock.reserved_quantity}
                         </TableCell>
                         <TableCell>
-                          {stock.serials.map((e) => e?.name ?? "-").join(", ")}
+                          {new Date(stock.purchase_date).toLocaleDateString()}
                         </TableCell>
-                        <TableCell>-</TableCell>
+                        <TableCell>
+                          {new Intl.NumberFormat("vi-VN", {
+                            style: "currency",
+                            currency: "VND",
+                          }).format(stock.purchase_cost)}
+                        </TableCell>
+
                         <TableCell className="text-right">
                           <Button
                             variant="ghost"
@@ -228,52 +270,71 @@ export default function StockPage() {
                           </Button>
                         </TableCell>
                       </TableRow>
-                      {stock.serials
-                        .filter((e) => e.status)
-                        .map((serial) => (
-                          <TableRow key={serial.id} className="bg-muted/30">
-                            <TableCell className="font-medium">
-                              <div className="flex items-center gap-2 pl-4">
-                                <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                                {serial.name}
-                              </div>
-                            </TableCell>
-                            <TableCell>-</TableCell>
-                            <TableCell className="text-center font-medium">
-                              -
-                            </TableCell>
-                            <TableCell className="text-center font-medium">
-                              -
-                            </TableCell>
-                            <TableCell className="text-center font-medium">
-                              -
-                            </TableCell>
-                            <TableCell className="font-mono text-sm">
-                              -
-                            </TableCell>
-                            <TableCell>
-                              <Badge
-                                className={
-                                  serial.status !== "IN_USE"
-                                    ? "bg-green-500/10 text-green-500"
-                                    : "bg-gray-500/10 text-blue-500"
-                                }
-                              >
-                                {serial.status === "IN_USE"
-                                  ? "In use"
-                                  : "Available"}
-                              </Badge>
-                            </TableCell>
-                          </TableRow>
-                        ))}
+
+                      {isExpanded && (
+                        <TableRow>
+                          <TableCell colSpan={9} className="p-0">
+                            <div className="bg-muted/20 p-4">
+                              <Table>
+                                <TableHeader>
+                                  <TableRow>
+                                    <TableHead className="text-center">
+                                      Serial
+                                    </TableHead>
+                                    <TableHead className="text-center">
+                                      Status
+                                    </TableHead>
+                                  </TableRow>
+                                </TableHeader>
+
+                                <TableBody className="text-center">
+                                  {stock.serials.length > 0 ? (
+                                    stock.serials.map((serial) => (
+                                      <TableRow key={serial.name}>
+                                        <TableCell className="font-mono">
+                                          {serial.name}
+                                        </TableCell>
+
+                                        <TableCell>
+                                          <Badge
+                                            className={
+                                              serial.status === "IN_USE"
+                                                ? "bg-blue-500/10 text-blue-500"
+                                                : "bg-green-500/10 text-green-500"
+                                            }
+                                          >
+                                            {serial.status === "IN_USE"
+                                              ? "In Use"
+                                              : "Available"}
+                                          </Badge>
+                                        </TableCell>
+                                      </TableRow>
+                                    ))
+                                  ) : (
+                                    <TableRow>
+                                      <TableCell
+                                        colSpan={2}
+                                        className="text-center text-muted-foreground"
+                                      >
+                                        No serials found
+                                      </TableCell>
+                                    </TableRow>
+                                  )}
+                                </TableBody>
+                              </Table>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      )}
                     </>
                   );
                 })}
+
                 {filteredStocks.length === 0 && (
                   <TableRow>
                     <TableCell
-                      colSpan={7}
-                      className="text-center py-8 text-muted-foreground"
+                      colSpan={9}
+                      className="py-8 text-center text-muted-foreground"
                     >
                       No stock records found
                     </TableCell>
@@ -349,6 +410,26 @@ export default function StockPage() {
                   type="number"
                   min="0"
                   defaultValue={editing?.reserved_quantity || 0}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="purchase_date">Purchase Date</Label>
+                <Input
+                  id="purchase_date"
+                  name="purchase_date"
+                  type="date"
+                  defaultValue={editing?.purchase_date}
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="purchase_cost">Purchase Cost (VND)</Label>
+                <Input
+                  id="purchase_cost"
+                  name="purchase_cost"
+                  type="number"
+                  defaultValue={editing?.purchase_cost}
+                  required
                 />
               </div>
             </div>

@@ -28,11 +28,11 @@ import { useState } from "react";
 const navigation = [
   { name: "Dashboard", href: "/", icon: LayoutDashboard },
   {
-    name: "Assets",
+    name: "Inventory",
     icon: Package,
     children: [
       {
-        name: "All Assets",
+        name: "Assets",
         href: "/assets",
       },
       { name: "Categories", href: "/categories", icon: Layers },
@@ -42,10 +42,14 @@ const navigation = [
   { name: "Stock", href: "/stock", icon: Box },
   { name: "Assignments", href: "/assignments", icon: ClipboardList },
   {
-    name: "Employees",
-    href: "/employees",
+    name: "User Management",
     icon: Users,
     children: [
+      {
+        name: "Employees",
+        href: "/employees",
+        icon: Users,
+      },
       {
         name: "Roles",
         href: "/roles",

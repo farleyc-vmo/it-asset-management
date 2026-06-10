@@ -168,11 +168,14 @@ export default function AssignmentsPage() {
   const [selectedType, setSelectedType] = useState(
     editing?.assignment_type || "CREATE_ASSIGNMENT",
   );
+  const [selectedSerials, setSelectedSerials] = useState<string[]>([""]);
 
   const selectedStock = assetStocks.find(
     (stock) => stock.id === selectedStockId,
   );
   const selectedWarehouse = selectedType !== "CHANGE_WAREHOUSE";
+  const availableSerials =
+    selectedStock?.serials.filter((s) => s.status !== "IN_USE") ?? [];
 
   return (
     <div className="space-y-6">
@@ -536,37 +539,61 @@ export default function AssignmentsPage() {
               </div>
             </div>
 
-            {selectedStock && (
-              <div className="space-y-2">
-                <Label>Serial Numbers</Label>
+            <div className="space-y-2">
+              <Label>Assign Serials</Label>
 
-                {selectedStock.serials.map((serial) => (
-                  <div
-                    key={serial.name}
-                    className="flex items-center justify-between"
+              {selectedSerials.map((value, index) => (
+                <div key={index} className="flex items-center gap-2">
+                  <Select
+                    value={value}
+                    onValueChange={(newValue) => {
+                      const updated = [...selectedSerials];
+                      updated[index] = newValue;
+                      setSelectedSerials(updated);
+                    }}
                   >
-                    <span>{serial.name}</span>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select serial" />
+                    </SelectTrigger>
 
-                    <Select
-                      defaultValue={serial.status || "AVAILABLE"}
-                      name={`serial-${serial.name}`}
-                    >
-                      <SelectTrigger className="w-40">
-                        <SelectValue />
-                      </SelectTrigger>
+                    <SelectContent>
+                      {availableSerials
+                        .filter(
+                          (serial) =>
+                            !selectedSerials.includes(serial.name) ||
+                            serial.name === value,
+                        )
+                        .map((serial) => (
+                          <SelectItem key={serial.name} value={serial.name}>
+                            {serial.name}
+                          </SelectItem>
+                        ))}
+                    </SelectContent>
+                  </Select>
 
-                      <SelectContent>
-                        <SelectItem value="AVAILABLE">Available</SelectItem>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    onClick={() =>
+                      setSelectedSerials((prev) =>
+                        prev.filter((_, i) => i !== index),
+                      )
+                    }
+                  >
+                    ×
+                  </Button>
+                </div>
+              ))}
 
-                        <SelectItem value="IN_USE">In Use</SelectItem>
-
-                        <SelectItem value="DAMAGED">Damaged</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                ))}
-              </div>
-            )}
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setSelectedSerials((prev) => [...prev, ""])}
+              >
+                + Add Serial
+              </Button>
+            </div>
             <div className="space-y-2">
               <Label htmlFor="note">Note</Label>
               <Textarea

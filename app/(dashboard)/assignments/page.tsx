@@ -72,21 +72,6 @@ export default function AssignmentsPage() {
     }
   };
 
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case "urgent":
-        return "bg-red-500/10 text-red-500";
-      case "high":
-        return "bg-orange-500/10 text-orange-500";
-      case "medium":
-        return "bg-amber-500/10 text-amber-500";
-      case "low":
-        return "bg-green-500/10 text-green-500";
-      default:
-        return "bg-muted text-muted-foreground";
-    }
-  };
-
   const handleSave = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const form = e.currentTarget;
@@ -113,10 +98,7 @@ export default function AssignmentsPage() {
       updated_at: now,
       created_by: editing?.created_by || employees[0]?.id || null,
       quantity: Number(formData.get("quantity")) || 1,
-      serials: (formData.get("serials") as string)
-        .split(",")
-        .map((s) => s.trim())
-        .filter(Boolean),
+      serials: selectedSerials,
       priority: formData.get("priority") as AssetAssignment["priority"],
       title: formData.get("title") as string,
       approved_by: (formData.get("approved_by") as string) || null,
@@ -221,7 +203,7 @@ export default function AssignmentsPage() {
                   <SelectItem value="assigned">Assigned</SelectItem>
                   <SelectItem value="returned">Returned</SelectItem>
                   <SelectItem value="cancelled">Cancelled</SelectItem>
-                  <SelectItem value="maintenance">Maintenance</SelectItem>
+                  {/* <SelectItem value="maintenance">Maintenance</SelectItem> */}
                 </SelectContent>
               </Select>
             </div>
@@ -236,7 +218,7 @@ export default function AssignmentsPage() {
                   <TableHead>Asset</TableHead>
                   <TableHead>Assigned To</TableHead>
                   <TableHead>Type</TableHead>
-                  <TableHead>Priority</TableHead>
+                  {/* <TableHead>Priority</TableHead> */}
                   <TableHead>Status</TableHead>
                   <TableHead>Date</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
@@ -266,13 +248,6 @@ export default function AssignmentsPage() {
                       <TableCell>{employee?.full_name || "-"}</TableCell>
                       <TableCell className="capitalize">
                         {assignment.assignment_type}
-                      </TableCell>
-                      <TableCell>
-                        <Badge
-                          className={getPriorityColor(assignment.priority)}
-                        >
-                          {assignment.priority}
-                        </Badge>
                       </TableCell>
                       <TableCell>
                         <Badge className={getStatusColor(assignment.status)}>
@@ -435,6 +410,7 @@ export default function AssignmentsPage() {
                     <SelectItem value="CHANGE_WAREHOUSE">
                       CHANGE_WAREHOUSE
                     </SelectItem>
+                    <SelectItem value="DEVICE_RECALL">DEVICE_RECALL</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -453,7 +429,7 @@ export default function AssignmentsPage() {
                     <SelectItem value="assigned">Assigned</SelectItem>
                     <SelectItem value="returned">Returned</SelectItem>
                     <SelectItem value="cancelled">Cancelled</SelectItem>
-                    <SelectItem value="maintenance">Maintenance</SelectItem>
+                    {/* <SelectItem value="maintenance">Maintenance</SelectItem> */}
                   </SelectContent>
                 </Select>
               </div>
@@ -636,12 +612,6 @@ export default function AssignmentsPage() {
                   <p className="text-muted-foreground">Status</p>
                   <Badge className={getStatusColor(viewing.status)}>
                     {viewing.status}
-                  </Badge>
-                </div>
-                <div>
-                  <p className="text-muted-foreground">Priority</p>
-                  <Badge className={getPriorityColor(viewing.priority)}>
-                    {viewing.priority}
                   </Badge>
                 </div>
                 <div>

@@ -28,10 +28,12 @@ import {
 } from "@/components/ui/table";
 import { useData } from "@/lib/data-context";
 import type { AssetStock } from "@/lib/types";
+import { cn } from "@/lib/utils";
 import {
   Box,
   ChevronDown,
   ChevronRight,
+  Package,
   Pencil,
   Plus,
   Search,
@@ -273,55 +275,70 @@ export default function StockPage() {
 
                       {isExpanded && (
                         <TableRow>
-                          <TableCell colSpan={9} className="p-0">
-                            <div className="bg-muted/20 p-4">
-                              <Table>
-                                <TableHeader>
-                                  <TableRow>
-                                    <TableHead className="text-center">
-                                      Serial
-                                    </TableHead>
-                                    <TableHead className="text-center">
-                                      Status
-                                    </TableHead>
-                                  </TableRow>
-                                </TableHeader>
+                          <TableCell colSpan={8} className="p-0">
+                            <div className="bg-muted/20 px-6 py-4">
+                              <div className="mx-auto w-full max-w-2xl">
+                                <div className="mb-3">
+                                  <h4 className="text-sm font-semibold">
+                                    Serial Numbers ({stock.serials.length})
+                                  </h4>
+                                </div>
 
-                                <TableBody className="text-center">
-                                  {stock.serials.length > 0 ? (
-                                    stock.serials.map((serial) => (
-                                      <TableRow key={serial.name}>
-                                        <TableCell className="font-mono">
-                                          {serial.name}
-                                        </TableCell>
+                                {stock.serials.length > 0 ? (
+                                  <div className="overflow-hidden rounded-lg border bg-background shadow-sm">
+                                    <div className="grid grid-cols-[1fr_120px] border-b bg-muted/50 px-4 py-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                                      <span>Serial Number</span>
+                                      <span className="text-center">
+                                        Status
+                                      </span>
+                                    </div>
 
-                                        <TableCell>
+                                    {stock.serials.map((serial, index) => (
+                                      <div
+                                        key={serial.name}
+                                        className={cn(
+                                          "grid grid-cols-[1fr_120px] items-center px-4 py-3",
+                                          index !== stock.serials.length - 1 &&
+                                            "border-b",
+                                        )}
+                                      >
+                                        <div className="flex items-center gap-3">
+                                          <div className="flex h-8 w-8 items-center justify-center rounded-md bg-muted">
+                                            <Package className="h-4 w-4 text-muted-foreground" />
+                                          </div>
+
+                                          <div>
+                                            <p className="font-mono text-sm font-medium">
+                                              {serial.name}
+                                            </p>
+                                          </div>
+                                        </div>
+
+                                        <div className="flex justify-center">
                                           <Badge
                                             className={
                                               serial.status === "IN_USE"
-                                                ? "bg-blue-500/10 text-blue-500"
-                                                : "bg-green-500/10 text-green-500"
+                                                ? "bg-blue-500/10 text-blue-500 hover:bg-blue-500/10"
+                                                : "bg-green-500/10 text-green-500 hover:bg-green-500/10"
                                             }
                                           >
                                             {serial.status === "IN_USE"
                                               ? "In Use"
                                               : "Available"}
                                           </Badge>
-                                        </TableCell>
-                                      </TableRow>
-                                    ))
-                                  ) : (
-                                    <TableRow>
-                                      <TableCell
-                                        colSpan={2}
-                                        className="text-center text-muted-foreground"
-                                      >
-                                        No serials found
-                                      </TableCell>
-                                    </TableRow>
-                                  )}
-                                </TableBody>
-                              </Table>
+                                        </div>
+                                      </div>
+                                    ))}
+                                  </div>
+                                ) : (
+                                  <div className="rounded-lg border border-dashed bg-background py-8 text-center shadow-sm">
+                                    <Package className="mx-auto mb-2 h-8 w-8 text-muted-foreground" />
+                                    <p className="text-sm text-muted-foreground">
+                                      No serial numbers found
+                                    </p>
+                                  </div>
+                                )}
+                              </div>
                             </div>
                           </TableCell>
                         </TableRow>

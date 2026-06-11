@@ -4,12 +4,12 @@ export type AssignmentStatus =
   | "pending"
   | "assigned"
   | "returned"
-  | "cancelled"
-  | "maintenance";
+  | "cancelled";
 export type AssignmentType =
   | "CREATE_ASSIGNMENT"
   | "REQUEST_ASSET"
-  | "CHANGE_WAREHOUSE";
+  | "CHANGE_WAREHOUSE"
+  | "DEVICE_RECALL";
 export type Priority = "low" | "medium" | "high" | "urgent";
 export type EmployeeStatus = "active" | "inactive" | "on_leave" | "terminated";
 export type EntityType =

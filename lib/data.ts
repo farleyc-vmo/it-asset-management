@@ -712,7 +712,7 @@ export const initialAssetStocks: AssetStock[] = [
   },
 
   {
-    id: "stock-5",
+    id: "stock-4",
     asset_id: "asset-10",
     warehouse_id: "wh-1",
     quantity: 8,
@@ -890,12 +890,12 @@ export const initialAssetAssignments: AssetAssignment[] = [
   {
     id: "assign-7",
     stock_id: "stock-2",
-    assignment_type: "CREATE_ASSIGNMENT",
+    assignment_type: "DEVICE_RECALL",
     assigned_to: "emp-10",
     assigned_date: "2024-05-01",
     expected_return_date: "2024-05-03",
     returned_date: "2024-05-02",
-    status: "maintenance",
+    status: "pending",
     condition_before: "New",
     condition_after: "No",
     note: "Finance department monitor",

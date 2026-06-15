@@ -47,6 +47,12 @@ export default function StockPage() {
   const [warehouseFilter, setWarehouseFilter] = useState<string>("all");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<AssetStock | null>(null);
+  const [serialInputs, setSerialInputs] = useState<
+    {
+      name: string;
+      status?: string;
+    }[]
+  >([]);
 
   const filteredStocks = assetStocks.filter((s) => {
     const asset = assets.find((a) => a.id === s.asset_id);
@@ -67,10 +73,12 @@ export default function StockPage() {
     const quantity = Number(formData.get("quantity")) || 0;
     const reserved = Number(formData.get("reserved_quantity")) || 0;
 
-    const serials = (formData.get("serials") as string)
-      .split(",")
-      .map((s) => ({ name: s }))
-      .filter(Boolean);
+    const serials = serialInputs
+      .filter((s) => s.name.trim())
+      .map((s) => ({
+        name: s.name.trim(),
+        status: s.status,
+      }));
 
     const stockData: AssetStock = {
       id: editing?.id || `stock-${Date.now()}`,
@@ -105,11 +113,18 @@ export default function StockPage() {
 
   const openEdit = (stock: AssetStock) => {
     setEditing(stock);
+    setSerialInputs(
+      stock.serials?.map((s) => ({
+        name: s.name,
+        status: s.status ?? "AVAILABLE",
+      })) ?? [],
+    );
     setDialogOpen(true);
   };
 
   const openAdd = () => {
     setEditing(null);
+    setSerialInputs([]);
     setDialogOpen(true);
   };
 
@@ -450,17 +465,81 @@ export default function StockPage() {
                 />
               </div>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="serials">Serial Numbers (comma separated)</Label>
-              <Input
-                id="serials"
-                name="serials"
-                defaultValue={editing?.serials
-                  .map((e) => e?.name ?? "-")
-                  .join(", ")}
-                placeholder="SN001, SN002, SN003"
-              />
+            <div className="space-y-3">
+              <Label>Serial Numbers</Label>
+
+              {serialInputs.map((serial, index) => (
+                <div
+                  key={index}
+                  className="grid grid-cols-[1fr_180px_auto] gap-2"
+                >
+                  <Input
+                    value={serial.name}
+                    placeholder={`Serial ${index + 1}`}
+                    onChange={(e) => {
+                      const updated = [...serialInputs];
+                      updated[index].name = e.target.value;
+                      setSerialInputs(updated);
+                    }}
+                  />
+
+                  <Select
+                    value={serial.status ?? "AVAILABLE"}
+                    onValueChange={(value) => {
+                      const updated = [...serialInputs];
+                      updated[index].status = value;
+                      setSerialInputs(updated);
+                    }}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+
+                    <SelectContent>
+                      <SelectItem value="AVAILABLE">Available</SelectItem>
+
+                      <SelectItem value="IN_USE">In Use</SelectItem>
+
+                      <SelectItem value="DAMAGED">Damaged</SelectItem>
+
+                      <SelectItem value="LOST">Lost</SelectItem>
+                    </SelectContent>
+                  </Select>
+
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    onClick={() =>
+                      setSerialInputs((prev) =>
+                        prev.filter((_, i) => i !== index),
+                      )
+                    }
+                  >
+                    <Trash2 className="h-4 w-4 text-destructive" />
+                  </Button>
+                </div>
+              ))}
+
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() =>
+                  setSerialInputs((prev) => [
+                    ...prev,
+                    {
+                      name: "",
+                      status: "AVAILABLE",
+                    },
+                  ])
+                }
+              >
+                <Plus className="mr-2 h-4 w-4" />
+                Add Serial
+              </Button>
             </div>
+
             <div className="flex justify-end gap-2">
               <Button
                 type="button"

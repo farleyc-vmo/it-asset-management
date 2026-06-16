@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -53,6 +54,7 @@ export default function StockPage() {
       status?: string;
     }[]
   >([]);
+  const [serialDialogOpen, setSerialDialogOpen] = useState(false);
 
   const filteredStocks = assetStocks.filter((s) => {
     const asset = assets.find((a) => a.id === s.asset_id);
@@ -465,29 +467,78 @@ export default function StockPage() {
                 />
               </div>
             </div>
-            <div className="space-y-3">
+
+            <div className="space-y-2">
               <Label>Serial Numbers</Label>
 
+              <div className="flex items-center justify-between rounded-lg border p-3">
+                <div>
+                  <p className="font-medium">
+                    {serialInputs.length} serial
+                    {serialInputs.length !== 1 ? "s" : ""}
+                  </p>
+
+                  <p className="text-sm text-muted-foreground">
+                    Manage serial numbers and statuses
+                  </p>
+                </div>
+
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setSerialDialogOpen(true)}
+                >
+                  Manage Serials
+                </Button>
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setDialogOpen(false)}
+              >
+                Cancel
+              </Button>
+              <Button type="submit">{editing ? "Update" : "Create"}</Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
+      <Dialog open={serialDialogOpen} onOpenChange={setSerialDialogOpen}>
+        <DialogContent className="max-w-3xl">
+          <DialogHeader>
+            <DialogTitle>Manage Serials</DialogTitle>
+            <DialogDescription>Add and manage serial numbers</DialogDescription>
+          </DialogHeader>
+
+          <div className="max-h-125 overflow-y-auto pr-2">
+            <div className="space-y-2">
               {serialInputs.map((serial, index) => (
                 <div
                   key={index}
-                  className="grid grid-cols-[1fr_180px_auto] gap-2"
+                  className="grid grid-cols-[1fr_150px_auto] gap-2 rounded-lg border p-3"
                 >
                   <Input
                     value={serial.name}
-                    placeholder={`Serial ${index + 1}`}
+                    placeholder="Serial Number"
                     onChange={(e) => {
                       const updated = [...serialInputs];
+
                       updated[index].name = e.target.value;
+
                       setSerialInputs(updated);
                     }}
                   />
 
                   <Select
-                    value={serial.status ?? "AVAILABLE"}
+                    value={serial.status}
                     onValueChange={(value) => {
                       const updated = [...serialInputs];
+
                       updated[index].status = value;
+
                       setSerialInputs(updated);
                     }}
                   >
@@ -520,37 +571,25 @@ export default function StockPage() {
                   </Button>
                 </div>
               ))}
-
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() =>
-                  setSerialInputs((prev) => [
-                    ...prev,
-                    {
-                      name: "",
-                      status: "AVAILABLE",
-                    },
-                  ])
-                }
-              >
-                <Plus className="mr-2 h-4 w-4" />
-                Add Serial
-              </Button>
             </div>
+          </div>
 
-            <div className="flex justify-end gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setDialogOpen(false)}
-              >
-                Cancel
-              </Button>
-              <Button type="submit">{editing ? "Update" : "Create"}</Button>
-            </div>
-          </form>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() =>
+              setSerialInputs((prev) => [
+                ...prev,
+                {
+                  name: "",
+                  status: "AVAILABLE",
+                },
+              ])
+            }
+          >
+            <Plus className="mr-2 h-4 w-4" />
+            Add Serial
+          </Button>
         </DialogContent>
       </Dialog>
     </div>

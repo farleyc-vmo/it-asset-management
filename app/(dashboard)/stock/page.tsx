@@ -28,7 +28,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useData } from "@/lib/data-context";
-import type { AssetStock } from "@/lib/types";
+import type { Stock } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import {
   Box,
@@ -43,11 +43,11 @@ import {
 import { useState } from "react";
 
 export default function StockPage() {
-  const { assetStocks, setAssetStocks, assets, warehouses } = useData();
+  const { stocks, setStocks, items, warehouses } = useData();
   const [search, setSearch] = useState("");
   const [warehouseFilter, setWarehouseFilter] = useState<string>("all");
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [editing, setEditing] = useState<AssetStock | null>(null);
+  const [editing, setEditing] = useState<Stock | null>(null);
   const [serialInputs, setSerialInputs] = useState<
     {
       name: string;
@@ -56,11 +56,11 @@ export default function StockPage() {
   >([]);
   const [serialDialogOpen, setSerialDialogOpen] = useState(false);
 
-  const filteredStocks = assetStocks.filter((s) => {
-    const asset = assets.find((a) => a.id === s.asset_id);
+  const filteredStocks = stocks.filter((s) => {
+    const item = items.find((a) => a.id === s.item_id);
     const matchSearch =
-      asset?.asset_name.toLowerCase().includes(search.toLowerCase()) ||
-      asset?.asset_code.toLowerCase().includes(search.toLowerCase());
+      item?.item_name.toLowerCase().includes(search.toLowerCase()) ||
+      item?.item_code.toLowerCase().includes(search.toLowerCase());
     const matchWarehouse =
       warehouseFilter === "all" || s.warehouse_id === warehouseFilter;
     return matchSearch && matchWarehouse;
@@ -82,9 +82,9 @@ export default function StockPage() {
         status: s.status,
       }));
 
-    const stockData: AssetStock = {
+    const stockData: Stock = {
       id: editing?.id || `stock-${Date.now()}`,
-      asset_id: formData.get("asset_id") as string,
+      item_id: formData.get("item_id") as string,
       warehouse_id: formData.get("warehouse_id") as string,
       quantity,
       available_quantity: quantity - reserved,
@@ -97,11 +97,11 @@ export default function StockPage() {
     };
 
     if (editing) {
-      setAssetStocks((prev) =>
+      setStocks((prev) =>
         prev.map((s) => (s.id === editing.id ? stockData : s)),
       );
     } else {
-      setAssetStocks((prev) => [...prev, stockData]);
+      setStocks((prev) => [...prev, stockData]);
     }
     setDialogOpen(false);
     setEditing(null);
@@ -109,11 +109,11 @@ export default function StockPage() {
 
   const handleDelete = (id: string) => {
     if (confirm("Are you sure you want to delete this stock record?")) {
-      setAssetStocks((prev) => prev.filter((s) => s.id !== id));
+      setStocks((prev) => prev.filter((s) => s.id !== id));
     }
   };
 
-  const openEdit = (stock: AssetStock) => {
+  const openEdit = (stock: Stock) => {
     setEditing(stock);
     setSerialInputs(
       stock.serials?.map((s) => ({
@@ -157,7 +157,7 @@ export default function StockPage() {
             Stock Management
           </h1>
           <p className="text-muted-foreground">
-            Track asset inventory across warehouses
+            Track item inventory across warehouses
           </p>
         </div>
         <Button onClick={openAdd}>
@@ -171,13 +171,13 @@ export default function StockPage() {
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <CardTitle className="flex items-center gap-2">
               <Box className="h-5 w-5" />
-              Stock Records ({assetStocks.length})
+              Stock Records ({stocks.length})
             </CardTitle>
             <div className="flex flex-col gap-2 sm:flex-row">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <Input
-                  placeholder="Search assets..."
+                  placeholder="Search items..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   className="pl-9 w-full sm:w-64"
@@ -207,7 +207,7 @@ export default function StockPage() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="pl-11">Asset</TableHead>
+                  <TableHead className="pl-11">Item</TableHead>
                   <TableHead>Warehouse</TableHead>
                   <TableHead className="text-center">Total</TableHead>
                   <TableHead className="text-center">Available</TableHead>
@@ -219,7 +219,7 @@ export default function StockPage() {
               </TableHeader>
               <TableBody>
                 {filteredStocks.map((stock) => {
-                  const asset = assets.find((a) => a.id === stock.asset_id);
+                  const item = items.find((a) => a.id === stock.item_id);
                   const warehouse = warehouses.find(
                     (w) => w.id === stock.warehouse_id,
                   );
@@ -244,10 +244,10 @@ export default function StockPage() {
 
                             <div>
                               <p className="font-medium">
-                                {asset?.asset_name || "-"}
+                                {item?.item_name || "-"}
                               </p>
                               <p className="font-mono text-xs text-muted-foreground">
-                                {asset?.asset_code}
+                                {item?.item_code}
                               </p>
                             </div>
                           </div>
@@ -389,17 +389,17 @@ export default function StockPage() {
           </DialogHeader>
           <form onSubmit={handleSave} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="asset_id">Asset</Label>
-              <Select name="asset_id" defaultValue={editing?.asset_id} required>
+              <Label htmlFor="item_id">Item</Label>
+              <Select name="item_id" defaultValue={editing?.item_id} required>
                 <SelectTrigger>
-                  <SelectValue placeholder="Select asset" />
+                  <SelectValue placeholder="Select item" />
                 </SelectTrigger>
                 <SelectContent>
-                  {assets
+                  {items
                     .filter((a) => !a.deleted_at)
-                    .map((asset) => (
-                      <SelectItem key={asset.id} value={asset.id}>
-                        {asset.asset_name} ({asset.asset_code})
+                    .map((item) => (
+                      <SelectItem key={item.id} value={item.id}>
+                        {item.item_name} ({item.item_code})
                       </SelectItem>
                     ))}
                 </SelectContent>

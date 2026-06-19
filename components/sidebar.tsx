@@ -32,15 +32,15 @@ const navigation = [
     icon: Package,
     children: [
       {
-        name: "Assets",
-        href: "/assets",
+        name: "Items",
+        href: "/items",
       },
       { name: "Categories", href: "/categories", icon: Layers },
     ],
   },
   { name: "Warehouses", href: "/warehouses", icon: Warehouse },
   { name: "Stock", href: "/stock", icon: Box },
-  { name: "Assignments", href: "/assignments", icon: ClipboardList },
+  { name: "Assets", href: "/assets", icon: ClipboardList },
   {
     name: "User Management",
     icon: Users,

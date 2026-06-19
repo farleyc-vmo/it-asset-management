@@ -1,12 +1,18 @@
 // ============ ENUMS ============
-export type AssetStatus = "active" | "inactive";
-export type AssignmentStatus =
+export type ItemStatus = "active" | "inactive";
+export type AssetAssignmentStatus =
   | "pending"
   | "assigned"
   | "returned"
   | "cancelled";
-export type AssignmentType =
-  | "CREATE_ASSIGNMENT"
+export type AssetStatus =
+  | "AVAILABLE"
+  | "DAMAGED"
+  | "IN_USE"
+  | "LOST"
+  | "MAINTENANCE";
+export type AssetType =
+  | "EMPLOYEE"
   | "REQUEST_ASSET"
   | "CHANGE_WAREHOUSE"
   | "DEVICE_RECALL";
@@ -87,16 +93,16 @@ export interface Warehouse {
   updated_at: string;
 }
 
-export interface Asset {
+export interface Item {
   id: string;
-  asset_code: string;
-  asset_name: string;
+  item_code: string;
+  item_name: string;
   category_id: string | null;
   brand: string;
   model: string;
   specification: string;
   supplier_url: string;
-  status: AssetStatus;
+  status: ItemStatus;
   image_url: string | null;
   note: string;
   created_by: string | null;
@@ -105,9 +111,9 @@ export interface Asset {
   deleted_at: string | null;
 }
 
-export interface AssetStock {
+export interface Stock {
   id: string;
-  asset_id: string;
+  item_id: string;
   warehouse_id: string;
   quantity: number;
   available_quantity: number;
@@ -119,15 +125,16 @@ export interface AssetStock {
   updated_at: string;
 }
 
-export interface AssetAssignment {
+export interface Asset {
   id: string;
   stock_id: string;
-  assignment_type: AssignmentType;
+  asset_type: AssetType;
   assigned_to: string;
   assigned_date: string;
   expected_return_date: string | null;
   returned_date: string | null;
-  status: AssignmentStatus;
+  asset_status: AssetStatus;
+  assignment_status: AssetAssignmentStatus;
   condition_before: string;
   condition_after: string | null;
   note: string;
@@ -136,9 +143,9 @@ export interface AssetAssignment {
   updated_at: string;
   created_by: string | null;
   quantity: number;
-  serials: string[];
+  serial_number: string;
   priority: Priority;
-  title: string;
+  asset_code: string;
   approved_by: string | null;
   warehouse_id?: string;
 }
@@ -159,7 +166,7 @@ export interface AuditLog {
 
 export interface AssetWithRelations extends Asset {
   category?: Category;
-  stocks?: AssetStock[];
+  stocks?: Stock[];
 }
 
 export interface EmployeeWithRelations extends Employee {
@@ -175,12 +182,12 @@ export interface DepartmentWithRelations extends Department {
   employees?: Employee[];
 }
 
-export interface AssetStockWithRelations extends AssetStock {
+export interface AssetStockWithRelations extends Stock {
   asset?: Asset;
   warehouse?: Warehouse;
 }
 
-export interface AssetAssignmentWithRelations extends AssetAssignment {
+export interface AssetAssignmentWithRelations extends Asset {
   stock?: AssetStockWithRelations;
   assigned_employee?: Employee;
   created_by_employee?: Employee;

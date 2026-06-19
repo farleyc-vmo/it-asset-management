@@ -1,57 +1,57 @@
 "use client";
 
-import { useData } from "@/lib/data-context";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useData } from "@/lib/data-context";
 import {
-  Package,
-  Users,
-  Building2,
-  Warehouse,
-  ClipboardList,
   AlertTriangle,
+  Building2,
   CheckCircle,
+  ClipboardList,
   Clock,
+  Package,
   TrendingUp,
+  Users,
+  Warehouse,
 } from "lucide-react";
 
 export default function DashboardPage() {
   const {
-    assets,
+    items,
     employees,
     departments,
     warehouses,
-    assetAssignments,
+    assets,
     categories,
-    assetStocks,
+    stocks,
   } = useData();
 
-  const activeAssets = assets.filter((a) => a.status === "active").length;
+  const activeItems = items.filter((a) => a.status === "active").length;
 
-  const maintenanceAssets = assetStocks
+  const maintenanceAssets = stocks
     .flatMap((stock) => stock.serials)
     .filter((serial) => serial.status === "IN_USE").length;
   const activeEmployees = employees.filter((e) => e.status === "active").length;
-  const pendingAssignments = assetAssignments.filter(
-    (a) => a.status === "pending",
+  const pendingAssignments = assets.filter(
+    (a) => a.assignment_status === "pending",
   ).length;
-  const activeAssignments = assetAssignments.filter(
-    (a) => a.status === "assigned",
+  const activeAssignments = assets.filter(
+    (a) => a.assignment_status === "assigned",
   ).length;
 
-  const totalAssetValue = assets.reduce((sum, a) => sum + a.purchase_cost, 0);
+  const totalAssetValue = 0;
 
   const stats = [
     {
-      name: "Total Assets",
-      value: assets.length,
+      name: "Total Items",
+      value: items.length,
       icon: Package,
       color: "text-blue-500",
       bgColor: "bg-blue-500/10",
     },
     {
-      name: "Active Assets",
-      value: activeAssets,
+      name: "Active Items",
+      value: activeItems,
       icon: CheckCircle,
       color: "text-green-500",
       bgColor: "bg-green-500/10",
@@ -100,7 +100,7 @@ export default function DashboardPage() {
     },
   ];
 
-  const recentAssignments = assetAssignments
+  const recentAssignments = assets
     .sort(
       (a, b) =>
         new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
@@ -172,7 +172,7 @@ export default function DashboardPage() {
               }).format(totalAssetValue)}
             </div>
             <p className="text-sm text-muted-foreground mt-1">
-              Across {assets.length} assets in {categories.length} categories
+              Across {items.length} items in {categories.length} categories
             </p>
           </CardContent>
         </Card>
@@ -198,14 +198,14 @@ export default function DashboardPage() {
                   >
                     <div>
                       <p className="text-sm font-medium text-foreground">
-                        {assignment.title}
+                        {assignment.asset_code}
                       </p>
                       <p className="text-xs text-muted-foreground">
                         {employee?.full_name || "Unknown"}
                       </p>
                     </div>
-                    <Badge className={getStatusColor(assignment.status)}>
-                      {assignment.status}
+                    <Badge className={getStatusColor(assignment.asset_status)}>
+                      {assignment.asset_status}
                     </Badge>
                   </div>
                 );
@@ -224,7 +224,9 @@ export default function DashboardPage() {
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
             {["AVAILABLE", "DAMAGED", "IN_USE", "MAINTENANCE", "LOST"].map(
               (status) => {
-                const count = assets.filter((a) => a.status === status).length;
+                const count = assets.filter(
+                  (a) => a.asset_status === status,
+                ).length;
                 const percentage =
                   assets.length > 0
                     ? ((count / assets.length) * 100).toFixed(1)

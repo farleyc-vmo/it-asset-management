@@ -119,14 +119,14 @@ export default function AssetsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Assets</h1>
+          <h1 className="text-2xl font-bold text-foreground">Items</h1>
           <p className="text-muted-foreground">
-            Manage your IT assets inventory
+            Manage your IT items
           </p>
         </div>
         <Button onClick={openAdd}>
           <Plus className="mr-2 h-4 w-4" />
-          Add Asset
+          Add Item
         </Button>
       </div>
 
@@ -135,7 +135,7 @@ export default function AssetsPage() {
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <CardTitle className="flex items-center gap-2">
               <Package className="h-5 w-5" />
-              Asset List ({filteredAssets.length})
+              Total: ({filteredAssets.length})
             </CardTitle>
             <div className="flex flex-col gap-2 sm:flex-row">
               <div className="relative">
@@ -256,13 +256,13 @@ export default function AssetsPage() {
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
-              {editing ? "Edit Asset" : "Add New Asset"}
+              {editing ? "Edit Item" : "Add New Item"}
             </DialogTitle>
           </DialogHeader>
           <form onSubmit={handleSave} className="space-y-4">
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
-                <Label htmlFor="asset_code">Asset Code</Label>
+                <Label htmlFor="asset_code">Item Code</Label>
                 <Input
                   id="asset_code"
                   name="asset_code"
@@ -271,7 +271,7 @@ export default function AssetsPage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="asset_name">Asset Name</Label>
+                <Label htmlFor="asset_name">Item Name</Label>
                 <Input
                   id="asset_name"
                   name="asset_name"

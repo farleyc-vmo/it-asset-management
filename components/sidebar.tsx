@@ -32,7 +32,7 @@ const navigation = [
     icon: Package,
     children: [
       {
-        name: "Assets",
+        name: "Items",
         href: "/assets",
       },
       { name: "Categories", href: "/categories", icon: Layers },

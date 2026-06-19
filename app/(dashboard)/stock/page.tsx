@@ -207,7 +207,7 @@ export default function StockPage() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="pl-11">Asset</TableHead>
+                  <TableHead className="pl-11">Item</TableHead>
                   <TableHead>Warehouse</TableHead>
                   <TableHead className="text-center">Total</TableHead>
                   <TableHead className="text-center">Available</TableHead>
@@ -389,7 +389,7 @@ export default function StockPage() {
           </DialogHeader>
           <form onSubmit={handleSave} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="asset_id">Asset</Label>
+              <Label htmlFor="asset_id">Item</Label>
               <Select name="asset_id" defaultValue={editing?.asset_id} required>
                 <SelectTrigger>
                   <SelectValue placeholder="Select asset" />

@@ -17,6 +17,7 @@ import {
   MapPin,
   Menu,
   Package,
+  ScanLine,
   Shield,
   Users,
   Warehouse,
@@ -41,6 +42,7 @@ const navigation = [
   { name: "Warehouses", href: "/warehouses", icon: Warehouse },
   { name: "Stock", href: "/stock", icon: Box },
   { name: "Assets", href: "/assets", icon: ClipboardList },
+  { name: "Scan", href: "/scan", icon: ScanLine },
   {
     name: "User Management",
     icon: Users,

@@ -11,7 +11,7 @@ export type AssetStatus =
   | "IN_USE"
   | "LOST"
   | "MAINTENANCE";
-export type AssetType =
+export type AssignType =
   | "EMPLOYEE"
   | "REQUEST_ASSET"
   | "CHANGE_WAREHOUSE"
@@ -128,7 +128,7 @@ export interface Stock {
 export interface Asset {
   id: string;
   stock_id: string;
-  asset_type: AssetType;
+  assign_type: AssignType;
   assigned_to: string;
   assigned_date: string;
   expected_return_date: string | null;

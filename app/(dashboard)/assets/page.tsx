@@ -28,8 +28,19 @@ import {
 } from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
 import { useData } from "@/lib/data-context";
-import type { Asset } from "@/lib/types";
-import { ClipboardList, Eye, Pencil, Plus, Search, Trash2 } from "lucide-react";
+import type { Asset, AssignType } from "@/lib/types";
+import {
+  Building2,
+  ClipboardList,
+  FilePlus,
+  Pencil,
+  Plus,
+  RotateCcw,
+  Search,
+  Trash2,
+  User,
+  Workflow,
+} from "lucide-react";
 import { useState } from "react";
 
 export default function AssetsPage() {
@@ -41,8 +52,13 @@ export default function AssetsPage() {
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<Asset | null>(null);
+  console.log("🚀 ~ AssetsPage ~ editing:", editing);
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
   const [viewing, setViewing] = useState<Asset | null>(null);
+
+  const [typePickerOpen, setTypePickerOpen] = useState(false);
+  const [selectedType, setSelectedType] = useState(editing?.assign_type || "");
+  console.log("🚀 ~ AssetsPage ~ selectedType:", selectedType);
 
   const filteredAssets = assets.filter((a) => {
     const employee = employees.find((e) => e.id === a.assigned_to);
@@ -96,7 +112,7 @@ export default function AssetsPage() {
     const assetData: Asset = {
       id: editing?.id || `assign-${Date.now()}`,
       stock_id: formData.get("stock_id") as string,
-      asset_type: formData.get("asset_type") as Asset["asset_type"],
+      assign_type: formData.get("assign_type") as Asset["assign_type"],
       assigned_to: formData.get("assigned_to") as string,
       assigned_date: formData.get("assigned_date") as string,
       expected_return_date:
@@ -140,12 +156,13 @@ export default function AssetsPage() {
   const openEdit = (asset: Asset) => {
     setEditing(asset);
     setDialogOpen(true);
-    setSelectedType(asset.asset_type);
+    setSelectedType(asset.assign_type);
   };
 
   const openAdd = () => {
     setEditing(null);
     setDialogOpen(true);
+    setSelectedType("");
   };
 
   const openView = (asset: Asset) => {
@@ -161,11 +178,34 @@ export default function AssetsPage() {
     return { item, warehouse };
   };
 
-  const [selectedType, setSelectedType] = useState(
-    editing?.asset_type || "EMPLOYEE",
-  );
-
   const selectedWarehouse = selectedType !== "CHANGE_WAREHOUSE";
+
+  const actionConfig = [
+    {
+      type: "EMPLOYEE",
+      label: "Assign Employee",
+      desc: "Assign asset to an employee",
+      icon: User,
+    },
+    {
+      type: "REQUEST_ASSET",
+      label: "Request Asset",
+      desc: "Create asset request workflow",
+      icon: FilePlus,
+    },
+    {
+      type: "CHANGE_WAREHOUSE",
+      label: "Change Warehouse",
+      desc: "Transfer asset location",
+      icon: Building2,
+    },
+    {
+      type: "DEVICE_RECALL",
+      label: "Device Recall",
+      desc: "Recall asset back to warehouse",
+      icon: RotateCcw,
+    },
+  ];
 
   return (
     <div className="space-y-6">
@@ -237,7 +277,7 @@ export default function AssetsPage() {
                   <TableHead>Item</TableHead>
                   <TableHead>Asset Status</TableHead>
                   <TableHead>Assigned To</TableHead>
-                  <TableHead>Type</TableHead>
+                  <TableHead>Assign Type</TableHead>
                   <TableHead>Assignment Status</TableHead>
                   <TableHead>Serial</TableHead>
                   <TableHead>Date</TableHead>
@@ -279,13 +319,13 @@ export default function AssetsPage() {
                         {employee?.full_name || warehouse?.name || "-"}
                       </TableCell>
                       <TableCell className="capitalize">
-                        {asset.asset_type}
+                        {asset.assign_type || "-"}
                       </TableCell>
                       <TableCell>
                         <Badge
                           className={getStatusColor(asset.assignment_status)}
                         >
-                          {asset.assignment_status}
+                          {asset.assignment_status || "-"}
                         </Badge>
                       </TableCell>
                       <TableCell>{asset.serial_number}</TableCell>
@@ -293,13 +333,18 @@ export default function AssetsPage() {
                         {new Date(asset.assigned_date).toLocaleDateString()}
                       </TableCell>
                       <TableCell className="text-right">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => openView(asset)}
-                        >
-                          <Eye className="h-4 w-4" />
-                        </Button>
+                        {!asset.assignment_status &&
+                          asset.asset_status === "AVAILABLE" && (
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => {
+                                setTypePickerOpen(true);
+                              }}
+                            >
+                              <Workflow className="h-4 w-4" />
+                            </Button>
+                          )}
                         <Button
                           variant="ghost"
                           size="icon"
@@ -336,7 +381,7 @@ export default function AssetsPage() {
 
       {/* Add/Edit Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
               {editing ? "Edit Asset" : "Create New Asset"}
@@ -389,40 +434,165 @@ export default function AssetsPage() {
                 />
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="asset_type">Asset Type</Label>
-                <Select
-                  name="asset_type"
-                  defaultValue={editing?.asset_type || "EMPLOYEE"}
-                  onValueChange={setSelectedType}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="EMPLOYEE">EMPLOYEE</SelectItem>
-                    <SelectItem value="REQUEST_ASSET">REQUEST_ASSET</SelectItem>
-                    <SelectItem value="CHANGE_WAREHOUSE">
-                      CHANGE_WAREHOUSE
-                    </SelectItem>
-                    <SelectItem value="DEVICE_RECALL">DEVICE_RECALL</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                {selectedWarehouse ? (
-                  <>
-                    <Label htmlFor="assigned_to">Assign To</Label>
+              {selectedType && (
+                <>
+                  <div className="space-y-2">
+                    <Label htmlFor="assign_type">Assign Type</Label>
                     <Select
-                      name="assigned_to"
-                      defaultValue={editing?.assigned_to}
-                      required
+                      name="assign_type"
+                      defaultValue={editing?.assign_type || selectedType || ""}
+                      onValueChange={setSelectedType}
                     >
                       <SelectTrigger>
-                        <SelectValue placeholder="Select employee" />
+                        <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
+                        <SelectItem value="EMPLOYEE">EMPLOYEE</SelectItem>
+                        <SelectItem value="REQUEST_ASSET">
+                          REQUEST_ASSET
+                        </SelectItem>
+                        <SelectItem value="CHANGE_WAREHOUSE">
+                          CHANGE_WAREHOUSE
+                        </SelectItem>
+                        <SelectItem value="DEVICE_RECALL">
+                          DEVICE_RECALL
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    {selectedWarehouse ? (
+                      <>
+                        <Label htmlFor="assigned_to">Assign To</Label>
+                        <Select
+                          name="assigned_to"
+                          defaultValue={editing?.assigned_to}
+                          required
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select employee" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {employees
+                              .filter((e) => e.status === "active")
+                              .map((emp) => (
+                                <SelectItem key={emp.id} value={emp.id}>
+                                  {emp.full_name}
+                                </SelectItem>
+                              ))}
+                          </SelectContent>
+                        </Select>
+                      </>
+                    ) : (
+                      <>
+                        <Label htmlFor="warehouse_id">Warehouse</Label>
+                        <Select
+                          name="warehouse_id"
+                          defaultValue={editing?.assigned_to}
+                          required
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select warehouses" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {warehouses.map((emp) => (
+                              <SelectItem key={emp.id} value={emp.id}>
+                                {emp.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </>
+                    )}
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="status">Status</Label>
+                    <Select
+                      name="status"
+                      defaultValue={editing?.assignment_status || "pending"}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="pending">Pending</SelectItem>
+                        <SelectItem value="assigned">Assigned</SelectItem>
+                        <SelectItem value="returned">Returned</SelectItem>
+                        <SelectItem value="cancelled">Cancelled</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="assigned_date">Assigned Date</Label>
+                    <Input
+                      id="assigned_date"
+                      name="assigned_date"
+                      type="date"
+                      defaultValue={
+                        editing?.assigned_date ||
+                        new Date().toISOString().split("T")[0]
+                      }
+                      required
+                    />
+                  </div>
+                  {selectedType === "DEVICE_RECALL" && (
+                    <>
+                      <div className="space-y-2">
+                        <Label htmlFor="expected_return_date">
+                          Expected Return Date
+                        </Label>
+                        <Input
+                          id="expected_return_date"
+                          name="expected_return_date"
+                          type="date"
+                          defaultValue={editing?.expected_return_date || ""}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="condition_before">
+                          Condition Before
+                        </Label>
+                        <Input
+                          id="condition_before"
+                          name="condition_before"
+                          defaultValue={editing?.condition_before || "Good"}
+                          required
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="condition_after">Condition After</Label>
+                        <Input
+                          id="condition_after"
+                          name="condition_after"
+                          defaultValue={editing?.condition_after || ""}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="returned_date">Returned Date</Label>
+                        <Input
+                          id="returned_date"
+                          name="returned_date"
+                          type="date"
+                          defaultValue={editing?.returned_date || ""}
+                        />
+                      </div>
+                    </>
+                  )}
+
+                  <div className="space-y-2">
+                    <Label htmlFor="approved_by">Approved By</Label>
+                    <Select
+                      name="approved_by"
+                      defaultValue={editing?.approved_by || ""}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Not approved yet" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="">Not approved</SelectItem>
                         {employees
                           .filter((e) => e.status === "active")
                           .map((emp) => (
@@ -432,129 +602,9 @@ export default function AssetsPage() {
                           ))}
                       </SelectContent>
                     </Select>
-                  </>
-                ) : (
-                  <>
-                    <Label htmlFor="warehouse_id">Warehouse</Label>
-                    <Select
-                      name="warehouse_id"
-                      defaultValue={editing?.assigned_to}
-                      required
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select warehouses" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {warehouses.map((emp) => (
-                          <SelectItem key={emp.id} value={emp.id}>
-                            {emp.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </>
-                )}
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="status">Status</Label>
-                <Select
-                  name="status"
-                  defaultValue={editing?.assignment_status || "pending"}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="pending">Pending</SelectItem>
-                    <SelectItem value="assigned">Assigned</SelectItem>
-                    <SelectItem value="returned">Returned</SelectItem>
-                    <SelectItem value="cancelled">Cancelled</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="quantity">Quantity</Label>
-                <Input
-                  id="quantity"
-                  name="quantity"
-                  type="number"
-                  min="1"
-                  defaultValue={editing?.quantity || 1}
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="assigned_date">Assigned Date</Label>
-                <Input
-                  id="assigned_date"
-                  name="assigned_date"
-                  type="date"
-                  defaultValue={
-                    editing?.assigned_date ||
-                    new Date().toISOString().split("T")[0]
-                  }
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="expected_return_date">
-                  Expected Return Date
-                </Label>
-                <Input
-                  id="expected_return_date"
-                  name="expected_return_date"
-                  type="date"
-                  defaultValue={editing?.expected_return_date || ""}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="condition_before">Condition Before</Label>
-                <Input
-                  id="condition_before"
-                  name="condition_before"
-                  defaultValue={editing?.condition_before || "Good"}
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="condition_after">Condition After</Label>
-                <Input
-                  id="condition_after"
-                  name="condition_after"
-                  defaultValue={editing?.condition_after || ""}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="returned_date">Returned Date</Label>
-                <Input
-                  id="returned_date"
-                  name="returned_date"
-                  type="date"
-                  defaultValue={editing?.returned_date || ""}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="approved_by">Approved By</Label>
-                <Select
-                  name="approved_by"
-                  defaultValue={editing?.approved_by || ""}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Not approved yet" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="">Not approved</SelectItem>
-                    {employees
-                      .filter((e) => e.status === "active")
-                      .map((emp) => (
-                        <SelectItem key={emp.id} value={emp.id}>
-                          {emp.full_name}
-                        </SelectItem>
-                      ))}
-                  </SelectContent>
-                </Select>
-              </div>
+                  </div>
+                </>
+              )}
             </div>
 
             {/* <div className="space-y-2">
@@ -658,7 +708,9 @@ export default function AssetsPage() {
                 </div>
                 <div>
                   <p className="text-muted-foreground">Type</p>
-                  <p className="font-medium capitalize">{viewing.asset_type}</p>
+                  <p className="font-medium capitalize">
+                    {viewing.assign_type}
+                  </p>
                 </div>
                 <div>
                   <p className="text-muted-foreground">Asset Status</p>
@@ -711,6 +763,50 @@ export default function AssetsPage() {
               </div>
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={typePickerOpen} onOpenChange={setTypePickerOpen}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Select Actions</DialogTitle>
+          </DialogHeader>
+
+          <div className="flex flex-col gap-2 mt-2">
+            {actionConfig.map((item) => {
+              const Icon = item.icon;
+
+              return (
+                <button
+                  key={item.type}
+                  onClick={() => {
+                    setEditing(null);
+                    setSelectedType(item.type as AssignType);
+                    setTypePickerOpen(false);
+                    setDialogOpen(true);
+                  }}
+                  className="
+              flex items-center gap-3
+              rounded-lg border p-3
+              text-left
+              hover:bg-muted/60
+              transition
+            "
+                >
+                  <div className="p-2 rounded-md bg-muted">
+                    <Icon className="h-4 w-4" />
+                  </div>
+
+                  <div className="flex flex-col">
+                    <span className="text-sm font-medium">{item.label}</span>
+                    <span className="text-xs text-muted-foreground">
+                      {item.desc}
+                    </span>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
         </DialogContent>
       </Dialog>
     </div>

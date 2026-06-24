@@ -52,13 +52,11 @@ export default function AssetsPage() {
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<Asset | null>(null);
-  console.log("🚀 ~ AssetsPage ~ editing:", editing);
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
   const [viewing, setViewing] = useState<Asset | null>(null);
 
   const [typePickerOpen, setTypePickerOpen] = useState(false);
   const [selectedType, setSelectedType] = useState(editing?.assign_type || "");
-  console.log("🚀 ~ AssetsPage ~ selectedType:", selectedType);
 
   const filteredAssets = assets.filter((a) => {
     const employee = employees.find((e) => e.id === a.assigned_to);
@@ -536,6 +534,7 @@ export default function AssetsPage() {
                         new Date().toISOString().split("T")[0]
                       }
                       required
+                      disabled
                     />
                   </div>
                   {selectedType === "DEVICE_RECALL" && (
@@ -560,6 +559,7 @@ export default function AssetsPage() {
                           name="condition_before"
                           defaultValue={editing?.condition_before || "Good"}
                           required
+                          disabled
                         />
                       </div>
                       <div className="space-y-2">

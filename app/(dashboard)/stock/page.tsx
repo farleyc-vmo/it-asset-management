@@ -13,6 +13,11 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -29,7 +34,7 @@ import {
 } from "@/components/ui/table";
 import { useData } from "@/lib/data-context";
 import type { Stock } from "@/lib/types";
-import { cn } from "@/lib/utils";
+
 import {
   Box,
   ChevronDown,
@@ -40,10 +45,10 @@ import {
   Search,
   Trash2,
 } from "lucide-react";
-import { useState } from "react";
+import React, { useState } from "react";
 
 export default function StockPage() {
-  const { stocks, setStocks, items, warehouses } = useData();
+  const { stocks, setStocks, items, warehouses, assets, employees } = useData();
   const [search, setSearch] = useState("");
   const [warehouseFilter, setWarehouseFilter] = useState<string>("all");
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -130,15 +135,6 @@ export default function StockPage() {
     setDialogOpen(true);
   };
 
-  // const getStockStatus = (available: number, total: number) => {
-  //   const ratio = available / total;
-  //   if (ratio === 0)
-  //     return { label: "Out of Stock", color: "bg-red-500/10 text-red-500" };
-  //   if (ratio < 0.3)
-  //     return { label: "Low Stock", color: "bg-amber-500/10 text-amber-500" };
-  //   return { label: "In Stock", color: "bg-green-500/10 text-green-500" };
-  // };
-
   const [expandedRows, setExpandedRows] = useState<string[]>([]);
 
   const toggleRow = (stockId: string) => {
@@ -148,6 +144,21 @@ export default function StockPage() {
         : [...prev, stockId],
     );
   };
+
+  const getAssetInfo = (stockId: string) => {
+    const stock = stocks.find((s) => s.id === stockId);
+    if (!stock) return null;
+    const asset = assets.filter((a) => a.stock_id === stockId);
+    return { asset };
+  };
+
+  const employeeMap = React.useMemo(() => {
+    return new Map(employees.map((e) => [e.id, e.full_name]));
+  }, [employees]);
+
+  const warehouseMap = React.useMemo(() => {
+    return new Map(warehouses.map((w) => [w.id, w.name]));
+  }, [warehouses]);
 
   return (
     <div className="space-y-6">
@@ -291,64 +302,168 @@ export default function StockPage() {
                       </TableRow>
 
                       {isExpanded && (
-                        <TableRow>
+                        <TableRow key={stock.id}>
                           <TableCell colSpan={8} className="p-0">
                             <div className="bg-muted/20 px-6 py-4">
-                              <div className="mx-auto w-full max-w-2xl">
-                                <div className="mb-3">
-                                  <h4 className="text-sm font-semibold">
-                                    Serial Numbers ({stock.serials.length})
-                                  </h4>
-                                </div>
-
+                              <div className="mx-auto w-full max-w-5xl">
                                 {stock.serials.length > 0 ? (
-                                  <div className="overflow-hidden rounded-lg border bg-background shadow-sm">
-                                    <div className="grid grid-cols-[1fr_120px] border-b bg-muted/50 px-4 py-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                                      <span>Serial Number</span>
-                                      <span className="text-center">
-                                        Status
-                                      </span>
-                                    </div>
+                                  <div className="space-y-4">
+                                    {[
+                                      {
+                                        key: "AVAILABLE",
+                                        label: "Available",
+                                        badgeClass:
+                                          "bg-green-500/10 text-green-600 border-green-500/20",
+                                        match: (s: any) => !s.status,
+                                      },
+                                      {
+                                        key: "IN_USE",
+                                        label: "In Use",
+                                        badgeClass:
+                                          "bg-blue-500/10 text-blue-600 border-blue-500/20",
+                                        match: (s: any) =>
+                                          s.status === "IN_USE",
+                                      },
+                                    ].map((group) => {
+                                      const serials = stock.serials.filter(
+                                        group.match,
+                                      );
 
-                                    {stock.serials.map((serial, index) => (
-                                      <div
-                                        key={serial.name}
-                                        className={cn(
-                                          "grid grid-cols-[1fr_120px] items-center px-4 py-3",
-                                          index !== stock.serials.length - 1 &&
-                                            "border-b",
-                                        )}
-                                      >
-                                        <div className="flex items-center gap-3">
-                                          <div className="flex h-8 w-8 items-center justify-center rounded-md bg-muted">
-                                            <Package className="h-4 w-4 text-muted-foreground" />
+                                      if (serials.length === 0) return null;
+
+                                      return (
+                                        <div
+                                          key={group.key}
+                                          className="rounded-xl border bg-background p-4"
+                                        >
+                                          {/* Header */}
+                                          <div className="mb-3 flex items-center gap-2">
+                                            <Badge className={group.badgeClass}>
+                                              {group.label}
+                                            </Badge>
+
+                                            <span className="text-sm text-muted-foreground">
+                                              {serials.length} assets
+                                            </span>
                                           </div>
 
-                                          <div>
-                                            <p className="font-mono text-sm font-medium">
-                                              {serial.name}
-                                            </p>
+                                          {/* Grid */}
+                                          <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+                                            {serials.map((serial) => {
+                                              const assetInfo = getAssetInfo(
+                                                stock.id,
+                                              );
+
+                                              const info =
+                                                assetInfo?.asset?.find(
+                                                  (item) =>
+                                                    item.asset_code ===
+                                                    serial.name,
+                                                );
+
+                                              const assignedName = (() => {
+                                                if (!info?.assigned_to)
+                                                  return "-";
+
+                                                if (
+                                                  info.assign_type ===
+                                                  "CHANGE_WAREHOUSE"
+                                                ) {
+                                                  return (
+                                                    warehouseMap.get(
+                                                      info.assigned_to,
+                                                    ) ?? "-"
+                                                  );
+                                                }
+
+                                                return (
+                                                  employeeMap.get(
+                                                    info.assigned_to,
+                                                  ) ?? "-"
+                                                );
+                                              })();
+
+                                              return (
+                                                <Popover key={serial.name}>
+                                                  <PopoverTrigger asChild>
+                                                    <div className="rounded-lg border bg-card p-3 cursor-pointer transition hover:border-primary hover:shadow-sm">
+                                                      <div className="flex items-center gap-2">
+                                                        <Package className="h-4 w-4 text-muted-foreground" />
+                                                        <p className="truncate font-mono text-sm font-medium">
+                                                          {serial.name}
+                                                        </p>
+                                                      </div>
+                                                    </div>
+                                                  </PopoverTrigger>
+
+                                                  <PopoverContent
+                                                    side="top"
+                                                    align="start"
+                                                    className="w-72 space-y-3 rounded-xl p-4"
+                                                  >
+                                                    <div className="text-xs text-muted-foreground">
+                                                      Asset Information
+                                                    </div>
+
+                                                    <div className="space-y-2 text-sm">
+                                                      <div className="flex justify-between">
+                                                        <span className="text-muted-foreground">
+                                                          ID
+                                                        </span>
+                                                        <span className="font-mono">
+                                                          {serial.name}
+                                                        </span>
+                                                      </div>
+                                                      <div className="flex justify-between">
+                                                        <span className="text-muted-foreground">
+                                                          Assign Type
+                                                        </span>
+                                                        <span>
+                                                          {info?.assign_type
+                                                            ? info?.assign_type
+                                                            : "-"}
+                                                        </span>
+                                                      </div>
+
+                                                      <div className="flex justify-between">
+                                                        <span className="text-muted-foreground">
+                                                          Assign to
+                                                        </span>
+                                                        <span>
+                                                          {assignedName ?? "-"}
+                                                        </span>
+                                                      </div>
+                                                    </div>
+
+                                                    <div className="border-t pt-2">
+                                                      <div className="flex items-center justify-between">
+                                                        <span className="text-xs text-muted-foreground">
+                                                          Status
+                                                        </span>
+
+                                                        <Badge
+                                                          className={
+                                                            serial.status
+                                                              ? "bg-blue-500/10 text-blue-600"
+                                                              : "bg-green-500/10 text-green-600"
+                                                          }
+                                                        >
+                                                          {serial.status ??
+                                                            "AVAILABLE"}
+                                                        </Badge>
+                                                      </div>
+                                                    </div>
+                                                  </PopoverContent>
+                                                </Popover>
+                                              );
+                                            })}
                                           </div>
                                         </div>
-
-                                        <div className="flex justify-center">
-                                          <Badge
-                                            className={
-                                              serial.status === "IN_USE"
-                                                ? "bg-blue-500/10 text-blue-500 hover:bg-blue-500/10"
-                                                : "bg-green-500/10 text-green-500 hover:bg-green-500/10"
-                                            }
-                                          >
-                                            {serial.status === "IN_USE"
-                                              ? "In Use"
-                                              : "Available"}
-                                          </Badge>
-                                        </div>
-                                      </div>
-                                    ))}
+                                      );
+                                    })}
                                   </div>
                                 ) : (
-                                  <div className="rounded-lg border border-dashed bg-background py-8 text-center shadow-sm">
+                                  <div className="rounded-lg border border-dashed bg-background py-8 text-center">
                                     <Package className="mx-auto mb-2 h-8 w-8 text-muted-foreground" />
                                     <p className="text-sm text-muted-foreground">
                                       No serial numbers found

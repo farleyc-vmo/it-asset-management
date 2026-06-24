@@ -92,7 +92,9 @@ export default function MobileScanPage() {
           (s: { name: string }) => s.name.toUpperCase() === code,
         );
         if (match) {
-          const item = items.find((i) => i.id === stock.item_id && !i.deleted_at);
+          const item = items.find(
+            (i) => i.id === stock.item_id && !i.deleted_at,
+          );
           if (!item) continue;
           const trackedAsset =
             assets.find(
@@ -156,14 +158,14 @@ export default function MobileScanPage() {
   const currentTrackedAsset = scanned?.trackedAsset
     ? scanned.trackedAsset
     : scanned
-      ? assets.find(
+      ? (assets.find(
           (a) =>
             a.stock_id === scanned.stock.id &&
             a.assignment_status === "assigned" &&
             (scanned.matchedSerial
               ? a.serial_number === scanned.matchedSerial
               : true),
-        ) ?? null
+        ) ?? null)
       : null;
 
   const assignedEmployee = currentTrackedAsset
@@ -256,7 +258,7 @@ export default function MobileScanPage() {
 
   return (
     <div className="mx-auto flex min-h-dvh max-w-md flex-col">
-      <header className="sticky top-0 z-20 flex items-center gap-3 border-b border-border bg-background/95 px-4 py-3 backdrop-blur supports-[backdrop-filter]:bg-background/80">
+      <header className="sticky top-0 z-20 flex items-center gap-3 border-b border-border bg-background/95 px-4 py-3 backdrop-blur supports-backdrop-filter:bg-background/80">
         {view === "detail" ? (
           <button
             type="button"
@@ -302,7 +304,7 @@ export default function MobileScanPage() {
               aria-label="Camera scanner"
               className="relative overflow-hidden rounded-2xl border border-border bg-card"
             >
-              <div className="relative aspect-[3/4] bg-gradient-to-b from-secondary/80 to-background">
+              <div className="relative aspect-3/4 bg-linear-to-b from-secondary/80 to-background">
                 <div className="absolute inset-0 opacity-30">
                   <div
                     className="h-full w-full"
@@ -323,7 +325,7 @@ export default function MobileScanPage() {
                   </div>
                 </div>
 
-                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-background/90 to-transparent p-4 pt-12 text-center">
+                <div className="absolute inset-x-0 bottom-0 bg-linear-to-t from-background/90 to-transparent p-4 pt-12 text-center">
                   <ScanLine className="mx-auto mb-2 h-6 w-6 text-muted-foreground" />
                   <p className="text-sm text-muted-foreground">
                     Align QR code within the frame
@@ -423,7 +425,7 @@ export default function MobileScanPage() {
                 </div>
               </div>
 
-              <dl className="grid grid-cols-2 gap-px border-t border-border bg-border">
+              <dl className="grid grid-cols-2 gap-px border-t bg-border">
                 {[
                   ["Brand", scanned.item.brand],
                   ["Model", scanned.item.model],
@@ -440,34 +442,60 @@ export default function MobileScanPage() {
               </dl>
 
               {assignedEmployee && (
-                <div className="border-t border-border px-4 py-3">
-                  <p className="text-xs text-muted-foreground">
-                    Currently assigned to
-                  </p>
-                  <p className="mt-0.5 text-sm font-medium">
-                    {assignedEmployee.full_name}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    {assignedEmployee.employee_code} · {assignedEmployee.position}
-                  </p>
-                </div>
+                <>
+                  <dl className="grid grid-cols-2 gap-px">
+                    <div className="border-t border-r border-border px-4 py-3">
+                      <p className="text-xs text-muted-foreground">
+                        Currently assigned to
+                      </p>
+                      <p className="mt-0.5 text-sm font-medium">
+                        {assignedEmployee.full_name}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {assignedEmployee.employee_code} ·{" "}
+                        {assignedEmployee.position}
+                      </p>
+                    </div>
+                    <div className="border-t border-border px-4 py-3">
+                      <p className="text-xs text-muted-foreground">
+                        Assigned Date
+                      </p>
+                      <p className="mt-0.5 text-sm font-medium">
+                        {scanned.trackedAsset?.assigned_date}
+                      </p>
+                    </div>
+                  </dl>
+                </>
               )}
 
               {currentTrackedAsset && (
-                <div className="border-t border-border px-4 py-3">
-                  <p className="text-xs text-muted-foreground">Asset status</p>
-                  <div className="mt-1 flex flex-wrap gap-2">
-                    <Badge className="bg-blue-500/10 text-blue-500">
-                      {currentTrackedAsset.asset_status}
-                    </Badge>
-                    <Badge className="bg-green-500/10 text-green-500 capitalize">
-                      {currentTrackedAsset.assignment_status}
-                    </Badge>
-                  </div>
-                </div>
+                <>
+                  <dl className="grid grid-cols-2 gap-px">
+                    <div className="border-t border-r border-border px-4 py-3">
+                      <p className="text-xs text-muted-foreground">
+                        Asset status
+                      </p>
+                      <div className="mt-1 flex flex-wrap gap-2">
+                        <Badge className="bg-blue-500/10 text-blue-500">
+                          {currentTrackedAsset.asset_status}
+                        </Badge>
+                      </div>
+                    </div>
+                    <div className="border-t border-border px-4 py-3">
+                      <p className="text-xs text-muted-foreground">
+                        Assignment status
+                      </p>
+                      <div className="mt-1 flex flex-wrap gap-2">
+                        <Badge className="bg-green-500/10 text-green-500 capitalize">
+                          {currentTrackedAsset.assignment_status}
+                        </Badge>
+                      </div>
+                    </div>
+                  </dl>
+                </>
               )}
 
-              <div className="border-t border-border px-4 py-3">
+              {/* <div className="border-t border-border px-4 py-3">
                 <p className="mb-2 text-xs text-muted-foreground">
                   Stock · {scanned.stock.available_quantity} available /{" "}
                   {scanned.stock.quantity} total
@@ -487,7 +515,7 @@ export default function MobileScanPage() {
                       </span>
                     ))}
                 </div>
-              </div>
+              </div> */}
             </section>
 
             <section aria-label="Quick actions" className="space-y-2">

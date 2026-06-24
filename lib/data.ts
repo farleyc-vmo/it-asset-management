@@ -652,22 +652,12 @@ export const initialStocks: Stock[] = [
     purchase_cost: 350000000,
     serials: [
       {
-        name: "MBP001",
-        status: "IN_USE",
+        name: "LTP-01",
       },
       {
-        name: "MBP002",
-        status: "IN_USE",
+        name: "LTP-02",
       },
-      {
-        name: "MBP003",
-      },
-      {
-        name: "MBP004",
-      },
-      {
-        name: "MBP005",
-      },
+      { name: "LTP-03", status: "IN_USE" },
     ],
     created_at: "2024-01-15",
     updated_at: "2024-05-01",
@@ -679,7 +669,11 @@ export const initialStocks: Stock[] = [
     quantity: 0,
     available_quantity: 0,
     reserved_quantity: 0,
-    serials: [],
+    serials: [
+      { name: "MON-01", status: "IN_USE" },
+      { name: "MON-02" },
+      { name: "MON-03" },
+    ],
     purchase_date: "2024-02-01",
     purchase_cost: 75000000,
     created_at: "2024-02-20",
@@ -694,19 +688,7 @@ export const initialStocks: Stock[] = [
     reserved_quantity: 0,
     purchase_date: "2023-11-05",
     purchase_cost: 5000000,
-    serials: [
-      {
-        name: "CSW001",
-        status: "IN_USE",
-      },
-      {
-        name: "CSW002",
-        status: "IN_USE",
-      },
-      {
-        name: "CSW003",
-      },
-    ],
+    serials: [],
     created_at: "2023-08-10",
     updated_at: "2024-03-01",
   },
@@ -722,30 +704,8 @@ export const initialStocks: Stock[] = [
     purchase_cost: 250000000,
     serials: [
       {
-        name: "MBP14-001",
+        name: "LTP-04",
         status: "IN_USE",
-      },
-      {
-        name: "MBP14-002",
-        status: "IN_USE",
-      },
-      {
-        name: "MBP14-003",
-      },
-      {
-        name: "MBP14-004",
-      },
-      {
-        name: "MBP14-005",
-      },
-      {
-        name: "MBP14-006",
-      },
-      {
-        name: "MBP14-007",
-      },
-      {
-        name: "MBP14-008",
       },
     ],
     created_at: "2024-02-01",

@@ -1,11 +1,14 @@
 import type {
   Asset,
+  AssetAssignmentStatus,
+  AssignType,
   AuditLog,
   Category,
   Department,
   Employee,
   Item,
   Location,
+  Request,
   Role,
   Stock,
   Warehouse,
@@ -718,12 +721,12 @@ export const initialAssets: Asset[] = [
   {
     id: "assign-1",
     stock_id: "stock-1",
-    assign_type: "",
+    assign_type: "" as AssignType,
     assigned_to: "",
     assigned_date: "2024-01-20",
     expected_return_date: null,
     returned_date: null,
-    assignment_status: "",
+    assignment_status: "" as AssetAssignmentStatus,
     asset_status: "AVAILABLE",
     condition_before: "New",
     condition_after: null,
@@ -741,12 +744,12 @@ export const initialAssets: Asset[] = [
   {
     id: "assign-2",
     stock_id: "stock-1",
-    assign_type: "",
+    assign_type: "" as AssignType,
     assigned_to: "",
     assigned_date: "2024-01-25",
     expected_return_date: null,
     returned_date: null,
-    assignment_status: "",
+    assignment_status: "" as AssetAssignmentStatus,
     asset_status: "AVAILABLE",
     condition_before: "New",
     condition_after: null,
@@ -967,5 +970,35 @@ export const initialAuditLogs: AuditLog[] = [
     performed_by: "emp-4",
     metadata: { action: "update", reason: "Medical leave" },
     created_at: "2024-05-15T09:00:00Z",
+  },
+];
+
+// ============ REQUESTS ============
+export const initialRequests: Request[] = [
+  {
+    id: "log-1",
+    created_at: "2024-01-15T09:00:00Z",
+    updated_at: "2024-01-15T09:00:00Z",
+    resolved_at: "2024-01-15T09:00:00Z",
+    request_code: "RQ-01",
+    request_type: "REQUEST_ASSET",
+    stock_id: "stock-1",
+    assigned_to: "",
+    title: "Request Access 1",
+    description: "Request Access",
+    status: "Pending",
+    approved_by: "emp-10",
+    assets: [
+      {
+        stockId: "stock-1",
+        assetCode: "LAP-001",
+        quantity: 1,
+      },
+      {
+        stockId: "stock-2",
+        assetCode: "MON-003",
+        quantity: 1,
+      },
+    ],
   },
 ];

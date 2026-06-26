@@ -32,7 +32,6 @@ import type { Asset, AssignType } from "@/lib/types";
 import {
   Building2,
   ClipboardList,
-  FilePlus,
   Pencil,
   Plus,
   RotateCcw,
@@ -154,7 +153,7 @@ export default function AssetsPage() {
   const openEdit = (asset: Asset) => {
     setEditing(asset);
     setDialogOpen(true);
-    setSelectedType(asset.assign_type);
+    setSelectedType(asset.assign_type ?? "");
   };
 
   const openAdd = () => {
@@ -185,12 +184,12 @@ export default function AssetsPage() {
       desc: "Assign asset to an employee",
       icon: User,
     },
-    {
-      type: "REQUEST_ASSET",
-      label: "Request Asset",
-      desc: "Create asset request workflow",
-      icon: FilePlus,
-    },
+    // {
+    //   type: "REQUEST_ASSET",
+    //   label: "Request Asset",
+    //   desc: "Create asset request workflow",
+    //   icon: FilePlus,
+    // },
     {
       type: "CHANGE_WAREHOUSE",
       label: "Change Warehouse",
@@ -235,7 +234,10 @@ export default function AssetsPage() {
                   className="pl-9 w-full sm:w-64"
                 />
               </div>
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <Select
+                value={statusFilter}
+                onValueChange={(value) => setStatusFilter(value ?? "")}
+              >
                 <SelectTrigger className="w-full sm:w-40">
                   <SelectValue placeholder="Status" />
                 </SelectTrigger>
@@ -250,7 +252,9 @@ export default function AssetsPage() {
               </Select>
               <Select
                 value={assignmentStatusFilter}
-                onValueChange={setAssignmentStatusFilter}
+                onValueChange={(value) =>
+                  setAssignmentStatusFilter(value ?? "")
+                }
               >
                 <SelectTrigger className="w-full sm:w-40">
                   <SelectValue placeholder="Status" />
@@ -321,7 +325,9 @@ export default function AssetsPage() {
                       </TableCell>
                       <TableCell>
                         <Badge
-                          className={getStatusColor(asset.assignment_status)}
+                          className={getStatusColor(
+                            asset.assignment_status ?? "",
+                          )}
                         >
                           {asset.assignment_status || "-"}
                         </Badge>
@@ -439,16 +445,16 @@ export default function AssetsPage() {
                     <Select
                       name="assign_type"
                       defaultValue={editing?.assign_type || selectedType || ""}
-                      onValueChange={setSelectedType}
+                      onValueChange={(value) => setSelectedType(value ?? "")}
                     >
                       <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="EMPLOYEE">EMPLOYEE</SelectItem>
-                        <SelectItem value="REQUEST_ASSET">
+                        {/* <SelectItem value="REQUEST_ASSET">
                           REQUEST_ASSET
-                        </SelectItem>
+                        </SelectItem> */}
                         <SelectItem value="CHANGE_WAREHOUSE">
                           CHANGE_WAREHOUSE
                         </SelectItem>
@@ -607,61 +613,6 @@ export default function AssetsPage() {
               )}
             </div>
 
-            {/* <div className="space-y-2">
-              <Label>Assign Serials</Label>
-
-              {selectedSerials.map((value, index) => (
-                <div key={index} className="flex items-center gap-2">
-                  <Select
-                    value={value}
-                    onValueChange={(newValue) => {
-                      const updated = [...selectedSerials];
-                      updated[index] = newValue;
-                      setSelectedSerials(updated);
-                    }}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select serial" />
-                    </SelectTrigger>
-
-                    <SelectContent>
-                      {availableSerials
-                        .filter(
-                          (serial) =>
-                            !selectedSerials.includes(serial.name) ||
-                            serial.name === value,
-                        )
-                        .map((serial) => (
-                          <SelectItem key={serial.name} value={serial.name}>
-                            {serial.name}
-                          </SelectItem>
-                        ))}
-                    </SelectContent>
-                  </Select>
-
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    onClick={() =>
-                      setSelectedSerials((prev) =>
-                        prev.filter((_, i) => i !== index),
-                      )
-                    }
-                  >
-                    ×
-                  </Button>
-                </div>
-              ))}
-
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setSelectedSerials((prev) => [...prev, ""])}
-              >
-                + Add Serial
-              </Button>
-            </div> */}
             <div className="space-y-2">
               <Label htmlFor="serial_number">Serial Number</Label>
               <Input
@@ -721,7 +672,7 @@ export default function AssetsPage() {
                 <div>
                   <p className="text-muted-foreground">Assignment Status</p>
                   <Badge
-                    className={`capitalize ${getStatusColor(viewing.assignment_status)}`}
+                    className={`capitalize ${getStatusColor(viewing.assignment_status ?? "")}`}
                   >
                     {viewing.assignment_status}
                   </Badge>

@@ -8,6 +8,7 @@ import {
   initialEmployees,
   initialItems,
   initialLocations,
+  initialRequests,
   initialRoles,
   initialStocks,
   initialWarehouses,
@@ -20,6 +21,7 @@ import type {
   Employee,
   Item,
   Location,
+  Request,
   Role,
   Stock,
   Warehouse,
@@ -47,6 +49,8 @@ interface DataContextType {
   setAssets: React.Dispatch<React.SetStateAction<Asset[]>>;
   auditLogs: AuditLog[];
   setAuditLogs: React.Dispatch<React.SetStateAction<AuditLog[]>>;
+  requests: Request[];
+  setRequests: React.Dispatch<React.SetStateAction<Request[]>>;
 }
 
 const DataContext = createContext<DataContextType | null>(null);
@@ -63,6 +67,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const [stocks, setStocks] = useState<Stock[]>(initialStocks);
   const [assets, setAssets] = useState<Asset[]>(initialAssets);
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>(initialAuditLogs);
+  const [requests, setRequests] = useState<Request[]>(initialRequests);
 
   return (
     <DataContext.Provider
@@ -87,6 +92,8 @@ export function DataProvider({ children }: { children: ReactNode }) {
         setAssets,
         auditLogs,
         setAuditLogs,
+        requests,
+        setRequests,
       }}
     >
       {children}

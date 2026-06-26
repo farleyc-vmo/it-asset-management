@@ -19,6 +19,7 @@ import {
   Package,
   ScanLine,
   Shield,
+  Ticket,
   Users,
   Warehouse,
 } from "lucide-react";
@@ -61,6 +62,7 @@ const navigation = [
   },
   { name: "Departments", href: "/departments", icon: Building2 },
   { name: "Locations", href: "/locations", icon: MapPin },
+  { name: "Requests", href: "/requests", icon: Ticket },
   { name: "Audit Logs", href: "/audit-logs", icon: History },
 ];
 
@@ -174,7 +176,7 @@ export function Sidebar() {
     <>
       {/* Mobile Sidebar */}
       <Sheet>
-        <SheetTrigger asChild>
+        <SheetTrigger>
           <Button
             variant="ghost"
             size="icon"

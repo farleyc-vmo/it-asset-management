@@ -128,13 +128,13 @@ export interface Stock {
 export interface Asset {
   id: string;
   stock_id: string;
-  assign_type: AssignType;
+  assign_type?: AssignType | null;
   assigned_to: string;
   assigned_date: string;
   expected_return_date: string | null;
   returned_date: string | null;
   asset_status: AssetStatus;
-  assignment_status: AssetAssignmentStatus;
+  assignment_status?: AssetAssignmentStatus | null;
   condition_before: string;
   condition_after: string | null;
   note: string;
@@ -160,6 +160,22 @@ export interface AuditLog {
   performed_by: string;
   metadata: Record<string, unknown> | null;
   created_at: string;
+}
+
+export interface Request {
+  id: string;
+  stock_id: string;
+  request_code: string;
+  request_type: AssignType;
+  assigned_to: string;
+  title: string;
+  description: string;
+  status: any;
+  approved_by: string;
+  created_at: string;
+  updated_at: string;
+  resolved_at: string;
+  assets?: any;
 }
 
 // ============ VIEW MODELS (with relations) ============
